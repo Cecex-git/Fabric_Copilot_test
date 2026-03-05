@@ -1,5 +1,13 @@
 table Games
 
+	/// Average meta score
+	measure 'Avg Meta Score' = AVERAGE(Games[meta_score])
+		formatString: 0.00
+
+	/// Average user score
+	measure 'Avg User Score' = AVERAGE(Games[user_score])
+		formatString: 0.00
+
 	column meta_score
 		dataType: int64
 		summarizeBy: sum
