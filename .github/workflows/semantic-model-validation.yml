@@ -26,9 +26,14 @@ jobs:
         run: |
           $te = Resolve-Path "te/TabularEditor.exe"
           & $te ./Games.SemanticModel/definition --validate
-          
+
       - name: Create BPA results folder
         run: mkdir bpa-results
+      
+      - name: Debug BPA rules
+        run: |
+          Write-Host "Listing bpa-rules folder:"
+          Get-ChildItem -Recurse ./bpa-rules
 
       - name: Run Best Practice Analyzer
         run: |
