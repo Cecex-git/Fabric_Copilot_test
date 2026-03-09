@@ -42,7 +42,7 @@ jobs:
               Start-Process -FilePath $te `
               -ArgumentList "./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json" `
               -RedirectStandardOutput "./bpa-results/BPAConsole.txt" `
-              -NoNewWindow -Wait
+              -NoNewWindow -Wait -PassThru
 
               if ($process.ExitCode -ne 0) {
               Write-Host "Tabular Editor failed with exit code $($process.ExitCode)"
