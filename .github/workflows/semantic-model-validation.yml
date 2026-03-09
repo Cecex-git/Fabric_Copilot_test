@@ -29,9 +29,8 @@ jobs:
 
       - name: Run Best Practice Analyzer
         run: |
-          te/TabularEditor.exe ./Games.SemanticModel/definition \
-            -A ./bpa-rules/BPARules.json \
-            -E ./bpa-results/BPAOutput.json
+          $te = Resolve-Path "te/TabularEditor.exe"
+            & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json -E ./bpa-results/BPAOutput.json
 
       - name: Fail if BPA violations found
         run: |
