@@ -30,7 +30,13 @@ jobs:
       - name: Run Best Practice Analyzer
         run: |
           $te = Resolve-Path "te/TabularEditor.exe"
-            & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json -E ./bpa-results/BPAOutput.json
+            & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json -E ./bpa-results/BPAOutput.json -B ./bpa-results/BPAFullReport.json
+      
+      - name: Upload BPA report
+        uses: actions/upload-artifact@v4
+        with:
+         name: bpa-report
+         path: bpa-results/
 
       - name: Fail if BPA violations found
         run: |
