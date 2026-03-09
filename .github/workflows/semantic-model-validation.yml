@@ -37,9 +37,13 @@ jobs:
 
       - name: Run Best Practice Analyzer
         run: |
-          $te = Resolve-Path "te/TabularEditor.exe"
-            $output = & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json 2>&1
-            $output | Out-File -FilePath ./bpa-results/BPAConsole.txt
+              $te = Resolve-Path "te/TabularEditor.exe"
+
+              Start-Process -FilePath $te `
+              -ArgumentList "./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json" `
+              -RedirectStandardOutput "./bpa-results/BPAConsole.txt" `
+              -RedirectStandardError "./bpa-results/BPAConsole.err" `
+              -NoNewWindow -Wait
 
       - name: Build full BPA report
         run: |
