@@ -38,7 +38,50 @@ jobs:
       - name: Run Best Practice Analyzer
         run: |
           $te = Resolve-Path "te/TabularEditor.exe"
-            & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json -E ./bpa-results/BPAOutput.json -B ./bpa-results/BPAFullReport.json
+            $output = & $te ./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json 2>&1
+            $output | Out-File -FilePath ./bpa-results/BPAConsole.txt
+
+      - name: Build full BPA report
+        run: |
+         $rules = Get-Content "./bpa-rules/BPARules.json" | ConvertFrom-Json
+         $console = Get-Content "./bpa-results/BPAConsole.txt"
+
+         $report = @()
+
+         foreach ($rule in $rules) {
+         $id = $rule.ID
+         $name = $rule.Name
+         $severity = $rule.Severity
+         $category = $rule.Category
+
+         # Detect violations
+         $violations = $console | Where-Object { $_ -match "violates rule `"$name`"" }
+
+         # Detect rule errors
+         $errors = $console | Where-Object { $_ -match "Error on rule '$name'" }
+
+         if ($violations.Count -gt 0) {
+            $status = "Failed"
+          }
+         elseif ($errors.Count -gt 0) {
+            $status = "Error"
+          }
+         else {
+            $status = "Passed"
+          }
+
+         $report += [PSCustomObject]@{
+            ID = $id
+            Name = $name
+            Category = $category
+            Severity = $severity
+            Status = $status
+            Violations = $violations
+            Errors = $errors
+          }
+         }
+         $report | ConvertTo-Json -Depth 10 | Out-File "./bpa-results/BPAFullReport.json"
+
       
       - name: Upload BPA report
         uses: actions/upload-artifact@v4
