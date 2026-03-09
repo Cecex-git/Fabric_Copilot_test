@@ -95,14 +95,16 @@ jobs:
 
       - name: Fail if BPA violations found
         run: |
-          if (Test-Path "./bpa-results/BPAOutput.json") {
-            $violations = Get-Content "./bpa-results/BPAOutput.json" | ConvertFrom-Json
-            if ($violations.Count -gt 0) {
-              Write-Host "BPA violations detected:"
-              Write-Host ($violations | ConvertTo-Json -Depth 10)
-              exit 1
-            }
-          }
+             $report = Get-Content "./bpa-results/BPAFullReport.json" | ConvertFrom-Json
+             $failed =  $report | Where-Object { $_.Status -in @("Failed","Error") }
+
+             if ($failed.Count -gt 0) {
+             Write-Host "❌ BPA violations detected:"
+             $failed | ConvertTo-Json -Depth 10
+             exit 1
+             }
+             Write-Host "✅ No BPA violations found."
+
 
       - name: Semantic diff against main
         run: |
