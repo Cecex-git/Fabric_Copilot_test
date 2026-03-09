@@ -19,7 +19,8 @@ jobs:
         run: |
           mkdir te
           curl -L -o te/TE.zip https://cdn.tabulareditor.com/te2/latest.zip
-          tar -xf te/TE.zip -C te
+          Expand-Archive -Path te/TE.zip -DestinationPath te
+          Get-ChildItem -Recurse te
 
       - name: Validate TMDL folder loads correctly
         run: |
