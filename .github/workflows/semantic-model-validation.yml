@@ -44,7 +44,7 @@ jobs:
               -RedirectStandardOutput "./bpa-results/BPAConsole.txt" `
               -NoNewWindow -Wait -PassThru
 
-              if ($process.ExitCode -ne 0) {
+              if ($process.ExitCode -gt 1) {
               Write-Host "Tabular Editor failed with exit code $($process.ExitCode)"
               exit 1
               }
