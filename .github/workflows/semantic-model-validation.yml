@@ -1,0 +1,53 @@
+name: Validate Semantic Model (.pbip / TMDL)
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-pbip:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Tabular Editor (portable)
+        run: |
+          mkdir te
+          curl -L -o te/TE.zip https://cdn.tabulareditor.com/te2/latest.zip
+          tar -xf te/TE.zip -C te
+
+      - name: Validate TMDL folder loads correctly
+        run: |
+          te/TabularEditor.exe ./Games.SemanticModel/definition --validate
+
+      - name: Run Best Practice Analyzer
+        run: |
+          te/TabularEditor.exe ./Games.SemanticModel/definition \
+            -A ./bpa-rules/BPARules.json \
+            -E ./bpa-results/BPAOutput.json
+
+      - name: Fail if BPA violations found
+        run: |
+          if (Test-Path "./bpa-results/BPAOutput.json") {
+            $violations = Get-Content "./bpa-results/BPAOutput.json" | ConvertFrom-Json
+            if ($violations.Count -gt 0) {
+              Write-Host "BPA violations detected:"
+              Write-Host ($violations | ConvertTo-Json -Depth 10)
+              exit 1
+            }
+          }
+
+      - name: Semantic diff against main
+        run: |
+          git fetch origin main
+          git diff origin/main -- ./Games.SemanticModel/definition > semantic_diff.txt
+          if ((Get-Content semantic_diff.txt).Length -gt 0) {
+            Write-Host "Semantic differences detected:"
+            Get-Content semantic_diff.txt
+            exit 1
+          }
