@@ -39,7 +39,7 @@ jobs:
         run: |
               $te = Resolve-Path "te/TabularEditor.exe"
 
-              Start-Process -FilePath $te `
+              $process = Start-Process -FilePath $te `
               -ArgumentList "./Games.SemanticModel/definition -A ./bpa-rules/BPARules.json" `
               -RedirectStandardOutput "./bpa-results/BPAConsole.txt" `
               -NoNewWindow -Wait -PassThru
