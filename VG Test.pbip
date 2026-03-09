@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "artifacts": [
+    {
+      "dataset": {
+        "path": "Games.SemanticModel"
+      }
+    }
+  ],
+  "settings": {
+    "enableTmdlSerialization": true
+  }
+}
