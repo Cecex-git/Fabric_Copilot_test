@@ -18,7 +18,7 @@ jobs:
       - name: Install Tabular Editor (portable)
         run: |
           mkdir te
-          curl -L -o te/TE.zip https://cdn.tabulareditor.com/te2/latest.zip
+          curl -L -o te/TE.zip https://cdn.tabulareditor.com/files/TabularEditor.Portable.zip
           Expand-Archive -Path te/TE.zip -DestinationPath te
           Get-ChildItem -Recurse te
 
