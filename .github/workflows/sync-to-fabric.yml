@@ -30,6 +30,26 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
+      - name: Configure Git credentials for Service Principal
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X PATCH \
+            "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/myGitCredentials" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "source": "ConfiguredConnection",
+              "connectionId": "${{ secrets.FABRIC_GIT_CONNECTION_ID }}"
+            }')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Failed to configure Git credentials for Service Principal"
+            exit 1
+          fi
+          echo "✅ Git credentials configured."
+
       - name: Get current Git status from Fabric
         id: git_status
         run: |
