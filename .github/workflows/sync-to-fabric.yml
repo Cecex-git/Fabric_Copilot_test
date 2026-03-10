@@ -98,25 +98,47 @@ jobs:
               '{workspaceHead:$wh,remoteCommitHash:$rch,conflictResolution:{conflictResolutionType:"Workspace",conflictResolutionPolicy:"PreferRemote"},options:{allowOverrideItems:true}}')
           fi
 
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          # Capture response headers to get the Location for LRO polling
+          RESPONSE=$(curl -s -i -w "\n%{http_code}" -X POST \
             "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/updateFromGit" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$BODY")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -1)
+          LOCATION=$(echo "$RESPONSE" | grep -i "^location:" | awk '{print $2}' | tr -d '\r')
 
           echo "HTTP status: $HTTP_CODE"
-          echo "Response: $BODY"
+          echo "Operation location: $LOCATION"
 
           if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ Fabric workspace updated successfully (sync completed immediately)."
+            echo "✅ Fabric workspace updated successfully."
           elif [ "$HTTP_CODE" = "202" ]; then
-            echo "✅ Fabric workspace update accepted (running as long-running operation)."
-            OPERATION_URL=$(echo "$BODY" | jq -r '.Location // empty')
-            if [ -n "$OPERATION_URL" ]; then
-              echo "Operation URL: $OPERATION_URL"
+            echo "🔄 Sync accepted as long-running operation. Polling for completion..."
+            if [ -z "$LOCATION" ]; then
+              echo "❌ No Location header returned — cannot poll operation status."
+              exit 1
+            fi
+            # Poll until succeeded or failed
+            for i in $(seq 1 20); do
+              sleep 15
+              OP=$(curl -s \
+                "$LOCATION" \
+                -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
+              STATUS=$(echo "$OP" | jq -r '.status // "unknown"')
+              echo "Poll $i — status: $STATUS"
+              if [ "$STATUS" = "Succeeded" ]; then
+                echo "✅ Fabric workspace sync completed successfully."
+                break
+              elif [ "$STATUS" = "Failed" ]; then
+                echo "❌ Fabric workspace sync failed:"
+                echo "$OP" | jq .
+                exit 1
+              fi
+            done
+            if [ "$STATUS" != "Succeeded" ]; then
+              echo "❌ Timed out waiting for Fabric sync to complete."
+              exit 1
             fi
           else
             echo "❌ Unexpected response from Fabric API."
