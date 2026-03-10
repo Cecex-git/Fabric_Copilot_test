@@ -83,21 +83,26 @@ jobs:
       - name: Update Fabric workspace from Git
         if: steps.git_status.outputs.in_sync == 'false'
         run: |
+          WORKSPACE_HEAD="${{ steps.git_status.outputs.workspace_head }}"
+          REMOTE_HASH="${{ steps.git_status.outputs.remote_hash }}"
+
+          # Omit workspaceHead if null (allowed only after Initialize Connection)
+          if [ "$WORKSPACE_HEAD" = "null" ] || [ -z "$WORKSPACE_HEAD" ]; then
+            BODY=$(jq -n \
+              --arg rch "$REMOTE_HASH" \
+              '{remoteCommitHash:$rch,conflictResolution:{conflictResolutionType:"Workspace",conflictResolutionPolicy:"PreferRemote"},options:{allowOverrideItems:true}}')
+          else
+            BODY=$(jq -n \
+              --arg wh "$WORKSPACE_HEAD" \
+              --arg rch "$REMOTE_HASH" \
+              '{workspaceHead:$wh,remoteCommitHash:$rch,conflictResolution:{conflictResolutionType:"Workspace",conflictResolutionPolicy:"PreferRemote"},options:{allowOverrideItems:true}}')
+          fi
+
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/updateFromGit" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "workspaceHead": "${{ steps.git_status.outputs.workspace_head }}",
-              "remoteCommitHash": "${{ steps.git_status.outputs.remote_hash }}",
-              "conflictResolution": {
-                "conflictResolutionType": "Workspace",
-                "conflictResolutionPolicy": "PreferRemote"
-              },
-              "options": {
-                "allowOverrideItems": true
-              }
-            }')
+            -d "$BODY")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -1)
