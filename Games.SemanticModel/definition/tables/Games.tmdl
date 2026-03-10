@@ -8,6 +8,14 @@ table Games
 	measure 'Avg User Score' = AVERAGE(Games[User_score])
 		formatString: 0.00
 
+	/// Maximum meta score
+	measure 'Max Meta Score' = MAX(Games[Meta_score])
+		formatString: 0.00
+
+	/// Maximum user score
+	measure 'Max User Score' = MAX(Games[User_score])
+		formatString: 0.00
+
 	/// Meta score
 	column Meta_score
 		dataType: int64
