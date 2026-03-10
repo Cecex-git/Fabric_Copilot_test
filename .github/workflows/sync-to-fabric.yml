@@ -1,0 +1,92 @@
+name: Sync to Fabric on Push
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Games.SemanticModel/**'
+  workflow_dispatch:
+
+jobs:
+  sync-fabric:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Entra ID token for Service Principal
+        id: get_token
+        run: |
+          RESPONSE=$(curl -s -X POST \
+            "https://login.microsoftonline.com/${{ secrets.FABRIC_TENANT_ID }}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.FABRIC_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.FABRIC_CLIENT_SECRET }}" \
+            -d "scope=https://api.fabric.microsoft.com/.default")
+          TOKEN=$(echo $RESPONSE | jq -r '.access_token')
+          if [ "$TOKEN" = "null" ] || [ -z "$TOKEN" ]; then
+            echo "❌ Failed to acquire token"
+            echo $RESPONSE | jq .
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Get current Git status from Fabric
+        id: git_status
+        run: |
+          RESPONSE=$(curl -s -X GET \
+            "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/status" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json")
+          echo "Status response: $RESPONSE"
+
+          WORKSPACE_HEAD=$(echo $RESPONSE | jq -r '.workspaceHead')
+          REMOTE_HASH=$(echo $RESPONSE | jq -r '.remoteCommitHash')
+
+          echo "workspace_head=$WORKSPACE_HEAD" >> $GITHUB_OUTPUT
+          echo "remote_hash=$REMOTE_HASH" >> $GITHUB_OUTPUT
+
+          if [ "$WORKSPACE_HEAD" = "$REMOTE_HASH" ]; then
+            echo "✅ Fabric is already up to date with remote. No sync needed."
+            echo "in_sync=true" >> $GITHUB_OUTPUT
+          else
+            echo "🔄 Changes detected. Sync required."
+            echo "in_sync=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Fabric workspace from Git
+        if: steps.git_status.outputs.in_sync == 'false'
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/updateFromGit" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "workspaceHead": "${{ steps.git_status.outputs.workspace_head }}",
+              "remoteCommitHash": "${{ steps.git_status.outputs.remote_hash }}",
+              "conflictResolution": {
+                "conflictResolutionType": "Workspace",
+                "conflictResolutionPolicy": "PreferRemote"
+              },
+              "options": {
+                "allowOverrideItems": true
+              }
+            }')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Fabric workspace updated successfully (sync completed immediately)."
+          elif [ "$HTTP_CODE" = "202" ]; then
+            echo "✅ Fabric workspace update accepted (running as long-running operation)."
+            OPERATION_URL=$(echo "$BODY" | jq -r '.Location // empty')
+            if [ -n "$OPERATION_URL" ]; then
+              echo "Operation URL: $OPERATION_URL"
+            fi
+          else
+            echo "❌ Unexpected response from Fabric API."
+            exit 1
+          fi
