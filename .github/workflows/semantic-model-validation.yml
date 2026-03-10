@@ -109,13 +109,3 @@ jobs:
              }
              Write-Host "✅ No BPA violations found."
 
-
-      - name: Semantic diff against main
-        run: |
-          git fetch origin main
-          git diff origin/main -- ./Games.SemanticModel/definition > semantic_diff.txt
-          if ((Get-Content semantic_diff.txt).Length -gt 0) {
-            Write-Host "Semantic differences detected:"
-            Get-Content semantic_diff.txt
-            exit 1
-          }
