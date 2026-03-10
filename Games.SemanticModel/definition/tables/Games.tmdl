@@ -8,7 +8,7 @@ table Games
 	measure 'Avg User Score' = AVERAGE(Games[user_score])
 		formatString: 0.00
 
-	/// weighted average metascore
+	/// Meta score
 	column meta_score
 		dataType: int64
 		summarizeBy: sum
