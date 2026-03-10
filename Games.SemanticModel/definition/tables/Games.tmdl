@@ -1,55 +1,50 @@
 table Games
 
 	/// Average meta score
-	measure 'Avg Meta Score' = AVERAGE(Games[meta_score])
+	measure 'Avg Meta Score' = AVERAGE(Games[Meta_score])
 		formatString: 0.00
 
 	/// Average user score
-	measure 'Avg User Score' = AVERAGE(Games[user_score])
+	measure 'Avg User Score' = AVERAGE(Games[User_score])
 		formatString: 0.00
 
-	column meta_score
+	/// Meta score
+	column Meta_score
 		dataType: int64
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: meta_score
 
-	column title
+	column Title
 		dataType: string
 		summarizeBy: none
 		sourceColumn: title
 
-	column platform
+	column Platform
 		dataType: string
 		summarizeBy: none
 		sourceColumn: platform
 
-	column date
+	column Date
 		dataType: string
 		summarizeBy: none
 		sourceColumn: date
 
-	column user_score
-		dataType: double
-		summarizeBy: sum
+	column User_score
+		dataType: decimal
+		summarizeBy: none
 		sourceColumn: user_score
 
-	column link
-		dataType: string
-		isHidden
-		summarizeBy: none
-		sourceColumn: link
-
-	column esrb_rating
+	column Esrb_rating
 		dataType: string
 		summarizeBy: none
 		sourceColumn: esrb_rating
 
-	column developers
+	column Developers
 		dataType: string
 		summarizeBy: none
 		sourceColumn: developers
 
-	column genres
+	column Genres
 		dataType: string
 		summarizeBy: none
 		sourceColumn: genres
