@@ -42,6 +42,13 @@ jobs:
           WORKSPACE_HEAD=$(echo $RESPONSE | jq -r '.workspaceHead')
           REMOTE_HASH=$(echo $RESPONSE | jq -r '.remoteCommitHash')
 
+          # Fail fast if the API returned an error
+          if echo "$RESPONSE" | jq -e '.errorCode' > /dev/null 2>&1; then
+            echo "❌ Fabric Git status API error:"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+
           echo "workspace_head=$WORKSPACE_HEAD" >> $GITHUB_OUTPUT
           echo "remote_hash=$REMOTE_HASH" >> $GITHUB_OUTPUT
 
