@@ -20,13 +20,12 @@ table Games
 		dataType: int64
 		summarizeBy: none
 		sourceColumn: meta_score
-		description: "Meta score"
 
+	/// Title of the game
 	column Title
 		dataType: string
 		summarizeBy: none
 		sourceColumn: title
-		description: "Title of the game"
 
 	column Platform
 		dataType: string
