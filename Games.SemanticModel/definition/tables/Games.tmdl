@@ -16,6 +16,10 @@ table Games
 	measure 'Max User Score' = MAX(Games[User_score])
 		formatString: 0.00
 
+	/// Total number of games published
+	measure 'Games Published' = COUNTROWS(Games)
+		formatString: #,0
+
 	column Meta_score
 		dataType: int64
 		summarizeBy: none
