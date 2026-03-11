@@ -12,6 +12,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate TMDL structure
+        run: |
+          ERRORS=0
+
+          # 1. Check definition.pbism exists and has valid JSON with a version field
+          PBISM="Games.SemanticModel/definition.pbism"
+          if [ ! -f "$PBISM" ]; then
+            echo "❌ Missing $PBISM — required by Fabric Git integration"
+            ERRORS=1
+          elif ! jq -e '.version' "$PBISM" > /dev/null 2>&1; then
+            echo "❌ $PBISM is invalid JSON or missing the 'version' field"
+            ERRORS=1
+          else
+            echo "✅ $PBISM present and valid"
+          fi
+
+          # 2. Check for description: properties in TMDL (not supported on columns by Fabric)
+          MATCHES=$(grep -rn "^\s\+description:" Games.SemanticModel/definition/ --include="*.tmdl" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "❌ Found 'description:' properties in TMDL — Fabric does not support this on columns. Use '/// text' doc comments instead:"
+            echo "$MATCHES"
+            ERRORS=1
+          else
+            echo "✅ No unsupported 'description:' properties found in TMDL files"
+          fi
+
+          # 3. Check database.tmdl has the required Fabric fields
+          DB_TMDL="Games.SemanticModel/definition/database.tmdl"
+          if [ ! -f "$DB_TMDL" ]; then
+            echo "❌ Missing $DB_TMDL — required by Fabric Git integration"
+            ERRORS=1
+          else
+            if ! grep -q "compatibilityMode: powerBI" "$DB_TMDL"; then
+              echo "❌ $DB_TMDL is missing 'compatibilityMode: powerBI'"
+              ERRORS=1
+            else
+              echo "✅ compatibilityMode: powerBI present in database.tmdl"
+            fi
+            if ! grep -q "^language:" "$DB_TMDL"; then
+              echo "❌ $DB_TMDL is missing a 'language:' field"
+              ERRORS=1
+            else
+              echo "✅ language field present in database.tmdl"
+            fi
+          fi
+
+          if [ "$ERRORS" -ne 0 ]; then
+            echo ""
+            echo "❌ Pre-flight validation failed. Fix the issues above before syncing to Fabric."
+            exit 1
+          fi
+          echo ""
+          echo "✅ All pre-flight checks passed."
+
       - name: Get Entra ID token for Service Principal
         id: get_token
         run: |
