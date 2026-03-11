@@ -1,0 +1,13 @@
+# Tabular Editor portable installation (downloaded by CI workflow)
+te/
+
+# BPA results (CI artifacts, not source)
+bpa-results/
+
+# Power BI Desktop cache and local files
+.pbidesktop/
+*.pbix
+
+# OS
+Thumbs.db
+.DS_Store
