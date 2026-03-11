@@ -10,3 +10,4 @@ annotation PBI_ProTooling = ["MCP-PBIModeling"]
 
 ref table Games
 
+ref table Platforms
