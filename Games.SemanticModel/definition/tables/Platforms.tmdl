@@ -1,0 +1,21 @@
+table Platforms
+
+	column Platform
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Platform
+
+	partition Platforms = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(Web.Contents("https://raw.githubusercontent.com/yaylinda/nintendo-games-ratings/master/data.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Selected Platform" = Table.SelectColumns(#"Promoted Headers", {"platform"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Selected Platform"),
+				    #"Filtered Rows" = Table.SelectRows(#"Removed Duplicates", each [platform] <> "TG16)" and [platform] <> "working title)"),
+				    #"Renamed Columns" = Table.RenameColumns(#"Filtered Rows", {{"platform", "Platform"}}),
+				    #"Sorted Rows" = Table.Sort(#"Renamed Columns", {{"Platform", Order.Ascending}})
+				in
+				    #"Sorted Rows"
+
