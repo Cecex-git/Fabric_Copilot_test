@@ -33,6 +33,8 @@ The two workflows are complementary:
 ## Repository Structure
 
 ```
+VG Test.pbip                        ← Power BI Project file — open this in Desktop
+
 Games.SemanticModel/
   definition.pbism                  ← Required Fabric item descriptor
   .platform                         ← Fabric Git metadata (logicalId, type)
@@ -52,6 +54,27 @@ bpa-rules/
 docs/
   fabric-cicd-guide.md             ← This file
 ```
+
+### `VG Test.pbip` — Power BI Project file
+
+This is the entry point for **Power BI Desktop**. Double-clicking it opens Desktop with the Games semantic model loaded directly from the TMDL source files.
+
+```json
+{
+  "version": "1.0",
+  "artifacts": [{ "dataset": { "path": "Games.SemanticModel" } }],
+  "settings": { "enableTmdlSerialization": true }
+}
+```
+
+Key setting: `enableTmdlSerialization: true` tells Desktop to persist the model as TMDL files inside `Games.SemanticModel/definition/` rather than as a single binary blob. This is what makes the model human-readable and Git-diffable.
+
+**Authoring workflow:**
+1. Open `VG Test.pbip` in Power BI Desktop
+2. Make changes to the model (columns, measures, M query, etc.)
+3. Save in Desktop → TMDL files in `Games.SemanticModel/definition/` are updated on disk
+4. Review the diff, open a PR → validation workflow runs
+5. Merge → sync workflow deploys to Fabric
 
 ---
 
