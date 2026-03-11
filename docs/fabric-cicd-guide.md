@@ -338,6 +338,8 @@ database Games
     language: 1033
 ```
 
+> Note: `language:` is an indented property inside the `database` block — the check uses `grep "language:"` (not anchored to line start).
+
 ---
 
 #### Adding new validation checks

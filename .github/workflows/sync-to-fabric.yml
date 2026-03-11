@@ -53,7 +53,7 @@ jobs:
             else
               echo "✅ compatibilityMode: powerBI present in database.tmdl"
             fi
-            if ! grep -q "^language:" "$DB_TMDL"; then
+            if ! grep -q "language:" "$DB_TMDL"; then
               echo "❌ $DB_TMDL is missing a 'language:' field"
               ERRORS=1
             else
