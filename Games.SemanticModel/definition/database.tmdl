@@ -1,3 +1,4 @@
 database Games
 	compatibilityLevel: 1700
 	compatibilityMode: powerBI
+	language: 1033
