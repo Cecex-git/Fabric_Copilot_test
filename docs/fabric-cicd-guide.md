@@ -7,15 +7,26 @@ This guide documents the setup, rules, and lessons learned for automatically syn
 ## Architecture Overview
 
 ```
-GitHub (main branch)
-  └─ push to Games.SemanticModel/**
-       └─ GitHub Actions: sync-to-fabric.yml
-            ├─ Pre-flight TMDL validation
-            ├─ Entra ID token (Service Principal)
-            ├─ Configure SP Git credentials (Fabric API)
-            ├─ Check Git status (Fabric API)
-            └─ updateFromGit → LRO polling → ✅ Fabric updated
+Pull Request → main
+  └─ GitHub Actions: semantic-model-validation.yml
+       ├─ Install Tabular Editor (portable)
+       ├─ Validate TMDL folder loads correctly
+       ├─ Run Best Practice Analyzer (BPA)
+       ├─ Build & upload BPA report artifact
+       └─ ❌ Block merge if violations found
+
+Push to main (Games.SemanticModel/**)
+  └─ GitHub Actions: sync-to-fabric.yml
+       ├─ Pre-flight TMDL validation (definition.pbism, description:, database.tmdl)
+       ├─ Entra ID token (Service Principal)
+       ├─ Configure SP Git credentials (Fabric API)
+       ├─ Check Git status (Fabric API)
+       └─ updateFromGit → LRO polling → ✅ Fabric updated
 ```
+
+The two workflows are complementary:
+- **Validation** runs on every PR — catches quality issues before they reach `main`
+- **Sync** runs after merge — deploys the validated model to Fabric
 
 ---
 
@@ -32,10 +43,14 @@ Games.SemanticModel/
       Games.tmdl                    ← Table columns, measures, partition (M query)
 
 .github/workflows/
-  sync-to-fabric.yml                ← CI/CD sync workflow
+  semantic-model-validation.yml    ← PR quality gate: TMDL load + BPA
+  sync-to-fabric.yml               ← CI/CD sync workflow (push to main)
+
+bpa-rules/
+  BPARules.json                    ← BPA rule definitions used by the validation workflow
 
 docs/
-  fabric-cicd-guide.md              ← This file
+  fabric-cicd-guide.md             ← This file
 ```
 
 ---
@@ -96,7 +111,103 @@ model Model                          ← annotation must NOT be inside this bloc
 
 ---
 
-## GitHub Actions Workflow
+## Semantic Model Validation Workflow
+
+**File:** `.github/workflows/semantic-model-validation.yml`
+
+**Triggers:**
+- Every pull request targeting `main`
+- Manual dispatch (`workflow_dispatch`)
+
+This workflow acts as a **quality gate** — it must pass before a PR can be merged. It runs on `windows-latest` because Tabular Editor is a Windows executable.
+
+### Step summary
+
+| Step | What it does |
+|---|---|
+| Checkout | Full history checkout (`fetch-depth: 0`) |
+| Install Tabular Editor | Downloads the latest portable TE3 from GitHub Releases into `te/` |
+| Validate TMDL folder | Runs `TabularEditor.exe ./Games.SemanticModel/definition --validate` — fails if TMDL cannot be parsed |
+| Run BPA | Runs BPA using `bpa-rules/BPARules.json`; outputs raw results to `bpa-results/BPAConsole.txt` |
+| Build BPA report | Parses raw output into a structured JSON report at `bpa-results/BPAFullReport.json` |
+| Upload artifact | Uploads the `bpa-results/` folder as a downloadable artifact on every run |
+| Fail on violations | Reads the report — exits with code 1 if any rule has status `Failed` or `Error` |
+
+### BPA rules reference
+
+Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = low, 2 = medium, 3 = high).
+
+#### DAX Expressions
+
+| ID | Name | Severity |
+|---|---|---|
+| `DAX_COLUMNS_FULLY_QUALIFIED` | Column references should be fully qualified | 2 |
+| `DAX_DIVISION_COLUMNS` | Avoid division (use DIVIDE function instead) | 3 |
+| `DAX_MEASURES_UNQUALIFIED` | Measure references should be unqualified | 2 |
+| `DAX_TODO` | Revisit TODO expressions | 1 |
+
+#### Formatting
+
+| ID | Name | Severity |
+|---|---|---|
+| `APPLY_FORMAT_STRING_MEASURES` | Provide format string for all visible measures | 3 |
+
+#### Metadata
+
+| ID | Name | Severity |
+|---|---|---|
+| `META_AVOID_FLOAT` | Do not use floating point data types | 3 |
+| `META_SUMMARIZE_NONE` | Don't summarize numeric columns | 1 |
+
+#### Model Layout
+
+| ID | Name | Severity |
+|---|---|---|
+| `LAYOUT_ADD_TO_PERSPECTIVES` | Add objects to perspectives | 1 |
+| `LAYOUT_COLUMNS_HIERARCHIES_DF` | Organize columns and hierarchies in display folders | 1 |
+| `LAYOUT_HIDE_FK_COLUMNS` | Hide foreign key columns | 1 |
+| `LAYOUT_LOCALIZE_DF` | Translate Display Folders | 1 |
+| `LAYOUT_MEASURES_DF` | Organize measures in display folders | 1 |
+
+#### Naming Conventions
+
+| ID | Name | Severity |
+|---|---|---|
+| `NO_CAMELCASE_COLUMNS_HIERARCHIES` | Avoid CamelCase on visible columns and hierarchies | 3 |
+| `NO_CAMELCASE_MEASURES_TABLES` | Avoid CamelCase on visible measures and tables | 3 |
+| `RELATIONSHIP_COLUMN_NAMES` | Names of columns in relationships should be the same | 3 |
+| `UPPERCASE_FIRST_LETTER_COLUMNS_HIERARCHIES` | Column and hierarchy names must start with uppercase letter | 3 |
+| `UPPERCASE_FIRST_LETTER_MEASURES_TABLES` | Measure and table names must start with uppercase letter | 3 |
+
+#### Performance
+
+| ID | Name | Severity |
+|---|---|---|
+| `PERF_UNUSED_COLUMNS` | Remove unused columns | 2 |
+| `PERF_UNUSED_MEASURES` | Remove unused measures | 1 |
+
+### Reading the BPA report artifact
+
+1. Open the failed PR in GitHub → **Actions** tab → select the run
+2. Scroll to **Artifacts** → download `bpa-report`
+3. Open `BPAFullReport.json` — each rule entry has:
+   - `Status`: `Passed`, `Failed`, or `Error`
+   - `Violations`: array of matching object names
+   - `Errors`: array of rule evaluation errors
+
+### Adding or modifying BPA rules
+
+Edit `bpa-rules/BPARules.json` following the existing schema. Each rule requires:
+- `ID` — unique string identifier
+- `Name` — human-readable name (also used for violation matching in the report builder)
+- `Category` — grouping label
+- `Severity` — 1 (low), 2 (medium), 3 (high)
+- `Scope` — comma-separated TE object types (e.g. `"Measure, DataColumn"`)
+- `Expression` — C# LINQ expression evaluated by Tabular Editor
+
+---
+
+## GitHub Actions Workflow — Sync to Fabric
 
 **File:** `.github/workflows/sync-to-fabric.yml`
 
