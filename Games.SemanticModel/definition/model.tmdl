@@ -6,7 +6,5 @@ model Games
 		legacyRedirects
 		returnErrorValuesAsNull
 
-annotation PBI_ProTooling = ["MCP-PBIModeling"]
-
-ref table Games
+	annotation PBI_ProTooling = ["MCP-PBIModeling"]
 
