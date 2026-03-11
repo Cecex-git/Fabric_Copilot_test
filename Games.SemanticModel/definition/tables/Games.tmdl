@@ -33,6 +33,7 @@ table Games
 
 	column Platform
 		dataType: string
+		isHidden: true
 		summarizeBy: none
 		sourceColumn: platform
 
