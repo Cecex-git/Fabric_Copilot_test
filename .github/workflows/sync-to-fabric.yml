@@ -86,12 +86,16 @@ jobs:
           WORKSPACE_HEAD="${{ steps.git_status.outputs.workspace_head }}"
           REMOTE_HASH="${{ steps.git_status.outputs.remote_hash }}"
 
-          # Omit workspaceHead if null (allowed only after Initialize Connection)
+          # When workspaceHead is null the workspace was never synced — use initializeConnection.
+          # For subsequent syncs, use updateFromGit.
           if [ "$WORKSPACE_HEAD" = "null" ] || [ -z "$WORKSPACE_HEAD" ]; then
+            echo "ℹ️ workspaceHead is null — using initializeConnection (first-time sync)."
+            ENDPOINT="https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/initializeConnection"
             BODY=$(jq -n \
-              --arg rch "$REMOTE_HASH" \
-              '{remoteCommitHash:$rch,conflictResolution:{conflictResolutionType:"Workspace",conflictResolutionPolicy:"PreferRemote"},options:{allowOverrideItems:true}}')
+              '{initializationStrategy: "PreferRemote"}')
           else
+            echo "ℹ️ workspaceHead found — using updateFromGit."
+            ENDPOINT="https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/updateFromGit"
             BODY=$(jq -n \
               --arg wh "$WORKSPACE_HEAD" \
               --arg rch "$REMOTE_HASH" \
@@ -100,7 +104,7 @@ jobs:
 
           # Capture response headers to get the Location for LRO polling
           RESPONSE=$(curl -s -i -w "\n%{http_code}" -X POST \
-            "https://api.fabric.microsoft.com/v1/workspaces/${{ secrets.FABRIC_WORKSPACE_ID }}/git/updateFromGit" \
+            "$ENDPOINT" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$BODY")
