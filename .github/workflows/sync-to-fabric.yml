@@ -98,13 +98,17 @@ jobs:
             echo "✅ '$PBIR' present and valid"
           fi
 
-          # 3. Check at least one page exists
-          PAGE_COUNT=$(find "Games Report.Report/definition/pages" -name "page.json" 2>/dev/null | wc -l)
-          if [ "$PAGE_COUNT" -eq 0 ]; then
-            echo "❌ No page.json files found under 'Games Report.Report/definition/pages/'"
+          # 3. Check report.json exists (Fabric-native old format)
+          REPORT_JSON="Games Report.Report/report.json"
+          if [ ! -f "$REPORT_JSON" ]; then
+            echo "❌ Missing '$REPORT_JSON' — required by Fabric report format"
+            ERRORS=1
+          elif ! jq -e '.sections' "$REPORT_JSON" > /dev/null 2>&1; then
+            echo "❌ '$REPORT_JSON' is invalid JSON or missing 'sections'"
             ERRORS=1
           else
-            echo "✅ Found $PAGE_COUNT page(s) in the report"
+            PAGE_COUNT=$(jq '.sections | length' "$REPORT_JSON")
+            echo "✅ '$REPORT_JSON' present and valid — $PAGE_COUNT section(s) found"
           fi
 
           if [ "$ERRORS" -ne 0 ]; then
