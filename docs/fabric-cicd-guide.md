@@ -190,7 +190,7 @@ To add a page, open the report in Power BI Desktop (via `VG Test.pbip`), add the
 |---|---|
 | `definition.pbism` | Fabric Git integration entry point. Without it every sync fails with `Required artifact is missing in 'definition.pbism'`. Content must be valid JSON with a `version` field. |
 | `definition/database.tmdl` | Must contain `compatibilityMode: powerBI` and `language: 1033`. Missing either causes a silent parse failure in Fabric. |
-| `definition/model.tmdl` | Must include `ref table Games` and any root-level annotations. |
+| `definition/model.tmdl` | Must include a `ref table` entry for **every table** in the model (e.g. `ref table Games`, `ref table Platforms`) plus any root-level annotations. |
 | `.platform` | Contains the Fabric `logicalId` that links the folder to the workspace item. |
 
 ### `definition.pbism` minimum content
