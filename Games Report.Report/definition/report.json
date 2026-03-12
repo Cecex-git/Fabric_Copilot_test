@@ -1,8 +1,1 @@
-{
-  "id": "9b095beb-2136-416f-89da-ca04ef244dbc",
-  "resourcePackages": [],
-  "settings": {
-    "useStylableVisualContainerHeader": true,
-    "exportDataMode": 1
-  }
-}
+{"$schema":"https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json","layoutOptimization":"None","themeCollection":{"baseTheme":{"name":"CY24SU06","reportVersionAtImport":"5.58","type":"SharedResources"}}}
