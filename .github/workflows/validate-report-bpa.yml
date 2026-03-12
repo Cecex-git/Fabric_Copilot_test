@@ -1,18 +1,13 @@
 name: Validate Report BPA
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'Games Report.Report/**'
-      - 'bpa-rules/ReportBPARules.json'
-      - 'bpa-rules/validate_report_bpa.py'
   pull_request:
     branches: [ main ]
     paths:
       - 'Games Report.Report/**'
       - 'bpa-rules/ReportBPARules.json'
       - 'bpa-rules/validate_report_bpa.py'
+  workflow_dispatch:
 
 jobs:
   report-bpa:
