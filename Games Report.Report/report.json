@@ -34,6 +34,15 @@
           "x": 20.0,
           "y": 20.0,
           "z": 0.0
+        },
+        {
+          "config": "{\"name\":\"9b3a4c5e-f123-4d67-8901-abcdef234567\",\"layouts\":[{\"id\":0,\"position\":{\"x\":752,\"y\":20,\"z\":1,\"width\":508,\"height\":440}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"Games.Developers\"},{\"queryRef\":\"Games.Games Published\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"Games\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Developers\"},\"Name\":\"Games.Developers\",\"NativeReferenceName\":\"Developers\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Games Published\"},\"Name\":\"Games.Games Published\",\"NativeReferenceName\":\"Games Published\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Games Published\"}}}]},\"drillFilterOtherVisuals\":true}}",
+          "filters": "[]",
+          "height": 440.0,
+          "width": 508.0,
+          "x": 752.0,
+          "y": 20.0,
+          "z": 1.0
         }
       ],
       "width": 1280.0
