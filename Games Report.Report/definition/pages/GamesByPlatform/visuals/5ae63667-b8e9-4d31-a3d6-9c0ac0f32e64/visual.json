@@ -1,1 +1,69 @@
-{"$schema":"https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json","name":"5ae63667-b8e9-4d31-a3d6-9c0ac0f32e64","position":{"x":20,"y":20,"height":440,"width":712,"z":0,"tabOrder":0},"visual":{"visualType":"tableEx","query":{"queryState":{"Values":{"projections":[{"field":{"Column":{"Expression":{"SourceRef":{"Entity":"Platforms"}},"Property":"Platform"}},"queryRef":"Platforms.Platform","active":true},{"field":{"Measure":{"Expression":{"SourceRef":{"Entity":"Games"}},"Property":"Games Published"}},"queryRef":"Games.Games Published","active":true}]}},"sortDefinition":{"sort":[{"field":{"Measure":{"Expression":{"SourceRef":{"Entity":"Games"}},"Property":"Games Published"}},"direction":"Descending"}],"isDefaultSort":false}}}}
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "5ae63667-b8e9-4d31-a3d6-9c0ac0f32e64",
+  "position": {
+    "x": 20,
+    "y": 20,
+    "z": 0,
+    "height": 440,
+    "width": 712,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Platforms"
+                    }
+                  },
+                  "Property": "Platform"
+                }
+              },
+              "queryRef": "Platforms.Platform",
+              "nativeQueryRef": "Platform"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Games"
+                    }
+                  },
+                  "Property": "Games Published"
+                }
+              },
+              "queryRef": "Games.Games Published",
+              "nativeQueryRef": "Games Published"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Games"
+                  }
+                },
+                "Property": "Games Published"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    }
+  }
+}
