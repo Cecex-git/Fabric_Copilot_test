@@ -1,0 +1,106 @@
+{
+  "name": "5ae63667-b8e9-4d31-a3d6-9c0ac0f32e64",
+  "position": {
+    "x": 20,
+    "y": 20,
+    "z": 0,
+    "height": 440,
+    "width": 712,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Platforms"
+                    }
+                  },
+                  "Property": "Platform"
+                }
+              },
+              "queryRef": "Platforms.Platform",
+              "active": true
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Games"
+                    }
+                  },
+                  "Property": "Games Published"
+                }
+              },
+              "queryRef": "Games.Games Published",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "prototypeQuery": {
+      "Version": 2,
+      "From": [
+        {
+          "Name": "p",
+          "Entity": "Platforms",
+          "Type": 0
+        },
+        {
+          "Name": "g",
+          "Entity": "Games",
+          "Type": 0
+        }
+      ],
+      "Select": [
+        {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Source": "p"
+              }
+            },
+            "Property": "Platform"
+          },
+          "Name": "Platforms.Platform"
+        },
+        {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Source": "g"
+              }
+            },
+            "Property": "Games Published"
+          },
+          "Name": "Games.Games Published"
+        }
+      ],
+      "OrderBy": [
+        {
+          "Direction": 2,
+          "Expression": {
+            "Measure": {
+              "Expression": {
+                "SourceRef": {
+                  "Source": "g"
+                }
+              },
+              "Property": "Games Published"
+            }
+          }
+        }
+      ]
+    },
+    "objects": {},
+    "vcObjects": {}
+  }
+}
