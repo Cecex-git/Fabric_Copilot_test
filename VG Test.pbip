@@ -5,6 +5,11 @@
       "dataset": {
         "path": "Games.SemanticModel"
       }
+    },
+    {
+      "report": {
+        "path": "Games Report.Report"
+      }
     }
   ],
   "settings": {
