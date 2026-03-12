@@ -1,0 +1,32 @@
+name: Validate Report BPA
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Games Report.Report/**'
+      - 'bpa-rules/ReportBPARules.json'
+      - 'bpa-rules/validate_report_bpa.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Games Report.Report/**'
+      - 'bpa-rules/ReportBPARules.json'
+      - 'bpa-rules/validate_report_bpa.py'
+
+jobs:
+  report-bpa:
+    name: Report Visual BPA
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Report BPA
+        run: python bpa-rules/validate_report_bpa.py "Games Report.Report/report.json"

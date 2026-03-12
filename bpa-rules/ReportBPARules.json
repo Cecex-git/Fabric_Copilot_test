@@ -1,0 +1,60 @@
+[
+    {
+        "ID": "REPORT_VISUAL_WITHIN_BOUNDS",
+        "Name": "Visual must fit within page bounds",
+        "Category": "Layout",
+        "Description": "Every visual container must be fully within the page dimensions. A visual that extends beyond the page width or height will be clipped or invisible in Fabric.",
+        "Severity": 3,
+        "Enabled": true
+    },
+    {
+        "ID": "REPORT_NO_OVERLAPPING_VISUALS",
+        "Name": "Visuals must not overlap each other",
+        "Category": "Layout",
+        "Description": "Two or more visual containers on the same page must not share any area. Overlapping visuals make the report hard to read and interact with.",
+        "Severity": 2,
+        "Enabled": true
+    },
+    {
+        "ID": "REPORT_VISUAL_HAS_PROJECTIONS",
+        "Name": "Visual must have at least one field assigned",
+        "Category": "Data",
+        "Description": "Every visual should have at least one field or measure in its projections. An empty visual adds no value and may cause rendering errors.",
+        "Severity": 3,
+        "Enabled": true
+    },
+    {
+        "ID": "REPORT_PAGE_HAS_DISPLAY_NAME",
+        "Name": "Page must have a display name",
+        "Category": "Naming Conventions",
+        "Description": "Every report page (section) must have a non-empty displayName. An unnamed page makes navigation confusing for report consumers.",
+        "Severity": 2,
+        "Enabled": true
+    },
+    {
+        "ID": "REPORT_MAX_VISUALS_PER_PAGE",
+        "Name": "Avoid too many visuals on a single page",
+        "Category": "Layout",
+        "Description": "A report page should not contain more than 6 visuals. Too many visuals on one page reduce readability and may slow down rendering.",
+        "Severity": 1,
+        "Enabled": true,
+        "MaxVisuals": 6
+    },
+    {
+        "ID": "REPORT_VISUAL_HAS_ALT_TEXT",
+        "Name": "Visual must have alt text for accessibility",
+        "Category": "Accessibility",
+        "Description": "Every visual should have an alt text description set in the formatting options (General > Alt text). This is required for screen reader accessibility.",
+        "Severity": 2,
+        "Enabled": true
+    },
+    {
+        "ID": "REPORT_TEXT_SIZE_MIN_12PX",
+        "Name": "Text size must be at least 12px",
+        "Category": "Accessibility",
+        "Description": "Any explicitly configured text size in a visual's formatting options must be at least 12px to ensure readability. Applies only to properties that are explicitly set (theme defaults are not checked).",
+        "Severity": 2,
+        "Enabled": true,
+        "MinTextSize": 12
+    }
+]
