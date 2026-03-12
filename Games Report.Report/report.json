@@ -43,6 +43,15 @@
           "x": 752.0,
           "y": 20.0,
           "z": 1.0
+        },
+        {
+          "config": "{\"name\":\"c7e2a1f4-3b89-4d56-9012-bcdef3456789\",\"layouts\":[{\"id\":0,\"position\":{\"x\":340,\"y\":480,\"z\":2,\"width\":600,\"height\":220}}],\"singleVisual\":{\"visualType\":\"pieChart\",\"projections\":{\"Category\":[{\"queryRef\":\"Platforms.Platform\"}],\"Y\":[{\"queryRef\":\"Games.Games Published\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"p\",\"Entity\":\"Platforms\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"Games\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"p\"}},\"Property\":\"Platform\"},\"Name\":\"Platforms.Platform\",\"NativeReferenceName\":\"Platform\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Games Published\"},\"Name\":\"Games.Games Published\",\"NativeReferenceName\":\"Games Published\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Games Published\"}}}]},\"drillFilterOtherVisuals\":true}}",
+          "filters": "[]",
+          "height": 220.0,
+          "width": 600.0,
+          "x": 340.0,
+          "y": 480.0,
+          "z": 2.0
         }
       ],
       "width": 1280.0
