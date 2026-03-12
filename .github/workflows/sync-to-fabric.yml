@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'Games.SemanticModel/**'
+      - 'Games Report.Report/**'
   workflow_dispatch:
 
 jobs:
@@ -68,6 +69,51 @@ jobs:
           fi
           echo ""
           echo "✅ All pre-flight checks passed."
+
+      - name: Validate Report structure
+        run: |
+          ERRORS=0
+
+          # 1. Check .platform exists and contains type "Report"
+          PLATFORM="Games Report.Report/.platform"
+          if [ ! -f "$PLATFORM" ]; then
+            echo "❌ Missing '$PLATFORM' — required by Fabric Git integration"
+            ERRORS=1
+          elif ! jq -e '.metadata.type == "Report"' "$PLATFORM" > /dev/null 2>&1; then
+            echo "❌ '$PLATFORM' is invalid JSON or missing metadata.type = \"Report\""
+            ERRORS=1
+          else
+            echo "✅ '$PLATFORM' present and valid"
+          fi
+
+          # 2. Check definition.pbir exists and has a datasetReference
+          PBIR="Games Report.Report/definition.pbir"
+          if [ ! -f "$PBIR" ]; then
+            echo "❌ Missing '$PBIR' — required by Fabric Git integration"
+            ERRORS=1
+          elif ! jq -e '.datasetReference' "$PBIR" > /dev/null 2>&1; then
+            echo "❌ '$PBIR' is invalid JSON or missing the 'datasetReference' field"
+            ERRORS=1
+          else
+            echo "✅ '$PBIR' present and valid"
+          fi
+
+          # 3. Check at least one page exists
+          PAGE_COUNT=$(find "Games Report.Report/definition/pages" -name "page.json" 2>/dev/null | wc -l)
+          if [ "$PAGE_COUNT" -eq 0 ]; then
+            echo "❌ No page.json files found under 'Games Report.Report/definition/pages/'"
+            ERRORS=1
+          else
+            echo "✅ Found $PAGE_COUNT page(s) in the report"
+          fi
+
+          if [ "$ERRORS" -ne 0 ]; then
+            echo ""
+            echo "❌ Report pre-flight validation failed. Fix the issues above before syncing to Fabric."
+            exit 1
+          fi
+          echo ""
+          echo "✅ All report pre-flight checks passed."
 
       - name: Get Entra ID token for Service Principal
         id: get_token
