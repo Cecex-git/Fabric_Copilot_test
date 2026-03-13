@@ -8,12 +8,17 @@ This guide documents the setup, rules, and lessons learned for automatically syn
 
 ```
 Pull Request → main
-  └─ GitHub Actions: semantic-model-validation.yml
-       ├─ Install Tabular Editor (portable)
-       ├─ Validate TMDL folder loads correctly
-       ├─ Run Best Practice Analyzer (BPA)
-       ├─ Build & upload BPA report artifact
-       └─ ❌ Block merge if violations found
+  ├─ GitHub Actions: semantic-model-validation.yml
+  │    ├─ Install Tabular Editor (portable)
+  │    ├─ Validate TMDL folder loads correctly
+  │    ├─ Run Best Practice Analyzer (BPA) on semantic model
+  │    ├─ Build & upload BPA report artifact
+  │    └─ ❌ Block merge if violations found
+  │
+  └─ GitHub Actions: validate-report-bpa.yml   (only when report files change)
+       ├─ Parse Games Report.Report/report.json
+       ├─ Evaluate 7 report visual BPA rules (layout, data, accessibility)
+       └─ ❌ Block merge if any Error or Warning violation found
 
 Push to main (Games.SemanticModel/** or Games Report.Report/**)
   └─ GitHub Actions: sync-to-fabric.yml
@@ -25,8 +30,9 @@ Push to main (Games.SemanticModel/** or Games Report.Report/**)
        └─ updateFromGit → LRO polling → ✅ Fabric updated
 ```
 
-The two workflows are complementary:
-- **Validation** runs on every PR — catches quality issues before they reach `main`
+The three workflows are complementary:
+- **Semantic model validation** runs on every PR — catches model quality issues before they reach `main`
+- **Report BPA** runs on PRs that touch report files — catches layout and accessibility issues before they reach `main`
 - **Sync** runs after merge — deploys the validated model and report to Fabric
 
 ---
@@ -240,6 +246,25 @@ model Model                          ← annotation must NOT be inside this bloc
 
 ### `dataType` note
 `decimal` and `double` are distinct types in Fabric. If Tabular Editor exports `decimal` but Fabric shows `double`, align them manually to avoid silent type drift.
+
+---
+
+## What is a Best Practice Analyzer (BPA)?
+
+A **Best Practice Analyzer (BPA)** is an automated tool that scans an artifact — a semantic model or a report — and checks it against a set of predefined rules. Each rule targets a known quality issue (performance, naming, accessibility, layout) and is assigned a severity level:
+
+| Severity | Label | Effect on CI |
+|---|---|---|
+| 3 | Error | Blocks merge |
+| 2 | Warning | Blocks merge |
+| 1 | Info | Reported, does not block |
+
+This project has **two BPAs**:
+
+| BPA | Artifact | Engine | Rules file |
+|---|---|---|---|
+| Semantic Model BPA | `Games.SemanticModel` | Tabular Editor 3 (C# LINQ expressions) | `bpa-rules/BPARules.json` |
+| Report Visual BPA | `Games Report.Report` | Python script | `bpa-rules/ReportBPARules.json` |
 
 ---
 
