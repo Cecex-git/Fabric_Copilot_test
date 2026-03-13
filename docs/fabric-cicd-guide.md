@@ -8,12 +8,17 @@ This guide documents the setup, rules, and lessons learned for automatically syn
 
 ```
 Pull Request → main
-  └─ GitHub Actions: semantic-model-validation.yml
-       ├─ Install Tabular Editor (portable)
-       ├─ Validate TMDL folder loads correctly
-       ├─ Run Best Practice Analyzer (BPA)
-       ├─ Build & upload BPA report artifact
-       └─ ❌ Block merge if violations found
+  ├─ GitHub Actions: semantic-model-validation.yml
+  │    ├─ Install Tabular Editor (portable)
+  │    ├─ Validate TMDL folder loads correctly
+  │    ├─ Run Best Practice Analyzer (BPA) on semantic model
+  │    ├─ Build & upload BPA report artifact
+  │    └─ ❌ Block merge if violations found
+  │
+  └─ GitHub Actions: validate-report-bpa.yml   (only when report files change)
+       ├─ Parse Games Report.Report/report.json
+       ├─ Evaluate 7 report visual BPA rules (layout, data, accessibility)
+       └─ ❌ Block merge if any Error or Warning violation found
 
 Push to main (Games.SemanticModel/** or Games Report.Report/**)
   └─ GitHub Actions: sync-to-fabric.yml
@@ -25,8 +30,9 @@ Push to main (Games.SemanticModel/** or Games Report.Report/**)
        └─ updateFromGit → LRO polling → ✅ Fabric updated
 ```
 
-The two workflows are complementary:
-- **Validation** runs on every PR — catches quality issues before they reach `main`
+The three workflows are complementary:
+- **Semantic model validation** runs on every PR — catches model quality issues before they reach `main`
+- **Report BPA** runs on PRs that touch report files — catches layout and accessibility issues before they reach `main`
 - **Sync** runs after merge — deploys the validated model and report to Fabric
 
 ---
@@ -56,11 +62,14 @@ Games Report.Report/
         CY26SU02.json               ← Default Fabric theme file
 
 .github/workflows/
-  semantic-model-validation.yml    ← PR quality gate: TMDL load + BPA
+  semantic-model-validation.yml    ← PR quality gate: TMDL load + model BPA
+  validate-report-bpa.yml          ← PR quality gate: report visual BPA
   sync-to-fabric.yml               ← CI/CD sync workflow (push to main)
 
 bpa-rules/
-  BPARules.json                    ← BPA rule definitions used by the validation workflow
+  BPARules.json                    ← Semantic model BPA rule definitions (Tabular Editor)
+  ReportBPARules.json              ← Report visual BPA rule definitions (Python evaluator)
+  validate_report_bpa.py           ← Python script that evaluates report BPA rules
 
 docs/
   fabric-cicd-guide.md             ← This file
@@ -240,6 +249,25 @@ model Model                          ← annotation must NOT be inside this bloc
 
 ---
 
+## What is a Best Practice Analyzer (BPA)?
+
+A **Best Practice Analyzer (BPA)** is an automated tool that scans an artifact — a semantic model or a report — and checks it against a set of predefined rules. Each rule targets a known quality issue (performance, naming, accessibility, layout) and is assigned a severity level:
+
+| Severity | Label | Effect on CI |
+|---|---|---|
+| 3 | Error | Blocks merge |
+| 2 | Warning | Blocks merge |
+| 1 | Info | Reported, does not block |
+
+This project has **two BPAs**:
+
+| BPA | Artifact | Engine | Rules file |
+|---|---|---|---|
+| Semantic Model BPA | `Games.SemanticModel` | Tabular Editor 3 (C# LINQ expressions) | `bpa-rules/BPARules.json` |
+| Report Visual BPA | `Games Report.Report` | Python script | `bpa-rules/ReportBPARules.json` |
+
+---
+
 ## Semantic Model Validation Workflow
 
 **File:** `.github/workflows/semantic-model-validation.yml`
@@ -333,6 +361,97 @@ Edit `bpa-rules/BPARules.json` following the existing schema. Each rule requires
 - `Severity` — 1 (low), 2 (medium), 3 (high)
 - `Scope` — comma-separated TE object types (e.g. `"Measure, DataColumn"`)
 - `Expression` — C# LINQ expression evaluated by Tabular Editor
+
+---
+
+## Report Visual BPA Workflow
+
+**File:** `.github/workflows/validate-report-bpa.yml`
+
+**Triggers:**
+- Every pull request targeting `main` with changes under `Games Report.Report/**`, `bpa-rules/ReportBPARules.json`, or `bpa-rules/validate_report_bpa.py`
+- Manual dispatch (`workflow_dispatch`)
+
+This workflow acts as a **report quality gate**, validating visual layout and accessibility before any change is merged. It runs `bpa-rules/validate_report_bpa.py` against `Games Report.Report/report.json`.
+
+### Step summary
+
+| Step | What it does |
+|---|---|
+| Checkout | Checks out repo files |
+| Set up Python | Installs Python 3.12 |
+| Run Report BPA | Runs `validate_report_bpa.py` — exits 1 if any Error or Warning violation found |
+
+### BPA rules reference
+
+Rules are defined in `bpa-rules/ReportBPARules.json`. Severity scale: 1 = Info, 2 = Warning, 3 = Error. The workflow **fails on any Error (3) or Warning (2)**. Info (1) violations are reported but do not fail CI.
+
+#### Layout
+
+| ID | Name | Severity |
+|---|---|---|
+| `REPORT_VISUAL_WITHIN_BOUNDS` | Visual must fit within page bounds | 3 (Error) |
+| `REPORT_NO_OVERLAPPING_VISUALS` | Visuals must not overlap each other | 2 (Warning) |
+| `REPORT_MAX_VISUALS_PER_PAGE` | Avoid too many visuals on a single page (max 6) | 1 (Info) |
+
+#### Data
+
+| ID | Name | Severity |
+|---|---|---|
+| `REPORT_VISUAL_HAS_PROJECTIONS` | Visual must have at least one field assigned | 3 (Error) |
+
+#### Naming Conventions
+
+| ID | Name | Severity |
+|---|---|---|
+| `REPORT_PAGE_HAS_DISPLAY_NAME` | Page must have a display name | 2 (Warning) |
+
+#### Accessibility
+
+| ID | Name | Severity |
+|---|---|---|
+| `REPORT_VISUAL_HAS_ALT_TEXT` | Visual must have alt text | 2 (Warning) |
+| `REPORT_TEXT_SIZE_MIN_12PX` | Explicitly-set text sizes must be ≥ 12px | 2 (Warning) |
+
+### Reading BPA output
+
+When the workflow fails, open the run log and look for the `── ERRORS ──` and `── WARNINGS ──` sections. Each violation shows:
+- The rule ID and name
+- The page name
+- The visual GUID (from `config.name`)
+- A plain-language description of the violation
+
+### Adding or modifying report BPA rules
+
+Edit `bpa-rules/ReportBPARules.json`. Each rule requires:
+- `ID` — unique string identifier
+- `Name` — human-readable name
+- `Category` — grouping label
+- `Description` — explanation shown in workflow output
+- `Severity` — 1 (Info), 2 (Warning), 3 (Error)
+- `Enabled` — `true` or `false`
+
+Rule-specific parameters (e.g. `MaxVisuals`, `MinTextSize`) are read by the evaluator script. To add a **new rule type** with custom logic, add the rule definition to `ReportBPARules.json` and add the corresponding evaluation block in `bpa-rules/validate_report_bpa.py`.
+
+### Alt text requirement
+
+Every visual must have alt text set. In the old Fabric `report.json` format, alt text is stored inside the stringified `config` JSON of a visual container:
+
+```json
+"singleVisual": {
+  "objects": {
+    "general": [{
+      "properties": {
+        "altText": {
+          "expr": { "Literal": { "Value": "'Description of the visual'" } }
+        }
+      }
+    }]
+  }
+}
+```
+
+The easiest way to set alt text is in Power BI Desktop: select the visual → **Format** pane → **General** → **Alt text**.
 
 ---
 
@@ -547,3 +666,6 @@ Service Principals **cannot use Automatic credentials** with GitHub — always u
 | Report loading bar never completes | Wrong report format (PBIR instead of old format) | Use `report.json` at report root (Fabric-native format), not `definition/pages/` PBIR structure. See **Games Report** section above. |
 | `Git_InvalidResponseFromWorkload` on report sync | PBIR JSON schema violations | Switch to Fabric-native `report.json` format — PBIR is not supported for rendering even if sync succeeds. |
 | Pre-flight: `No sections found in report.json` | `report.json` missing or not old format | Ensure `report.json` exists at `Games Report.Report/report.json` with a `sections` array |
+| Report BPA: `Visual has no alt text` | Alt text not set on a visual | Set alt text in Power BI Desktop: Format pane → General → Alt text; or add it directly to the `singleVisual.objects.general[0].properties.altText` field in `report.json` |
+| Report BPA: `Visual extends beyond page bounds` | Visual position + size exceeds page dimensions | Adjust `x`/`y`/`width`/`height` in the visual container so `x + width ≤ page width` and `y + height ≤ page height` |
+| Report BPA: `Visuals overlap` | Two visuals share screen area | Reposition visuals so their bounding boxes do not intersect |
