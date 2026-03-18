@@ -1,5 +1,12 @@
 table Platforms
 
+	column PlatformKey
+		dataType: int64
+		isHidden: true
+		isKey: true
+		summarizeBy: none
+		sourceColumn: PlatformKey
+
 	column Platform
 		dataType: string
 		summarizeBy: none
@@ -15,7 +22,9 @@ table Platforms
 				    #"Removed Duplicates" = Table.Distinct(#"Selected Platform"),
 				    #"Filtered Rows" = Table.SelectRows(#"Removed Duplicates", each [platform] <> "TG16)" and [platform] <> "working title)"),
 				    #"Renamed Columns" = Table.RenameColumns(#"Filtered Rows", {{"platform", "Platform"}}),
-				    #"Sorted Rows" = Table.Sort(#"Renamed Columns", {{"Platform", Order.Ascending}})
+				    #"Sorted Rows" = Table.Sort(#"Renamed Columns", {{"Platform", Order.Ascending}}),
+				    #"Added Index" = Table.AddIndexColumn(#"Sorted Rows", "PlatformKey", 1, 1, Int64.Type),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Added Index", {"PlatformKey", "Platform"})
 				in
-				    #"Sorted Rows"
+				    #"Reordered Columns"
 

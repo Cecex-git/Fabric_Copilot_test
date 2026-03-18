@@ -104,16 +104,16 @@ Key setting: `enableTmdlSerialization: true` tells Desktop to persist the model 
 
 | Table | Type | Source |
 |---|---|---|
-| `Games` | Fact | CSV — `https://raw.githubusercontent.com/yaylinda/nintendo-games-ratings/master/data.csv` |
-| `Platforms` | Dimension | Derived — distinct `Platform` values from the same CSV |
+| `Games` | Fact | CSV — `https://raw.githubusercontent.com/yaylinda/nintendo-games-ratings/master/data.csv` (includes hidden integer FK `PlatformKey`) |
+| `Platforms` | Dimension | Derived — distinct `Platform` values from the same CSV with surrogate key `PlatformKey` |
 
 ### Relationships
 
 | From | To | Cardinality | Active |
 |---|---|---|---|
-| `Games[Platform]` | `Platforms[Platform]` | Many-to-One | ✅ Yes |
+| `Games[PlatformKey]` | `Platforms[PlatformKey]` | Many-to-One | ✅ Yes |
 
-> **BPA rule `LAYOUT_HIDE_FK_COLUMNS`:** The `Games[Platform]` FK column must be hidden (`isHidden: true` in TMDL) to avoid exposing it alongside the dimension table.
+> **BPA rule `LAYOUT_HIDE_FK_COLUMNS`:** The `Games[PlatformKey]` FK column must be hidden (`isHidden: true` in TMDL) to avoid exposing it alongside the dimension table.
 
 ### Measures (`Games` table)
 
@@ -335,6 +335,14 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 | `RELATIONSHIP_COLUMN_NAMES` | Names of columns in relationships should be the same | 3 |
 | `UPPERCASE_FIRST_LETTER_COLUMNS_HIERARCHIES` | Column and hierarchy names must start with uppercase letter | 3 |
 | `UPPERCASE_FIRST_LETTER_MEASURES_TABLES` | Measure and table names must start with uppercase letter | 3 |
+
+#### Relationship Design
+
+| ID | Name | Severity |
+|---|---|---|
+| `RELATIONSHIP_AVOID_BIDIRECTIONAL` | Avoid bidirectional cross-filtering | 2 |
+| `RELATIONSHIP_AVOID_MANY_TO_MANY` | Avoid many-to-many relationships | 2 |
+| `RELATIONSHIP_TEXT_KEYS` | Relationship keys should not be text | 2 |
 
 #### Performance
 
