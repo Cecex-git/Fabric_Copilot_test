@@ -302,6 +302,9 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 | `DAX_DIVISION_COLUMNS` | Avoid division (use DIVIDE function instead) | 3 |
 | `DAX_MEASURES_UNQUALIFIED` | Measure references should be unqualified | 2 |
 | `DAX_TODO` | Revisit TODO expressions | 1 |
+| `DAX_COUNTROWS_INSTEAD_OF_COUNT` | Prefer COUNTROWS over COUNT | 2 |
+| `DAX_AVOID_FORMAT_IN_MEASURES` | Avoid FORMAT in measures | 2 |
+| `DAX_AVOID_EARLIER` | Avoid EARLIER | 2 |
 
 #### Formatting
 
