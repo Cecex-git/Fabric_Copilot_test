@@ -31,12 +31,6 @@ table Games
 		summarizeBy: none
 		sourceColumn: title
 
-	column Platform
-		dataType: string
-		isHidden: true
-		summarizeBy: none
-		sourceColumn: platform
-
 	column PlatformKey
 		dataType: int64
 		isHidden: true
@@ -81,7 +75,8 @@ table Games
 				    #"Sorted Rows" = Table.Sort(#"Filtered Rows", {{"platform", Order.Ascending}}),
 				    #"Added Platform Index" = Table.AddIndexColumn(#"Sorted Rows", "PlatformKey", 1, 1, Int64.Type),
 				    #"Merged Platform Lookup" = Table.NestedJoin(#"Changed Type", {"platform"}, #"Added Platform Index", {"platform"}, "PlatformLookup", JoinKind.LeftOuter),
-				    #"Expanded Platform Lookup" = Table.ExpandTableColumn(#"Merged Platform Lookup", "PlatformLookup", {"PlatformKey"}, {"PlatformKey"})
+				    #"Expanded Platform Lookup" = Table.ExpandTableColumn(#"Merged Platform Lookup", "PlatformLookup", {"PlatformKey"}, {"PlatformKey"}),
+				    #"Removed Platform Column" = Table.RemoveColumns(#"Expanded Platform Lookup", {"platform"})
 				in
-				    #"Expanded Platform Lookup"
+				    #"Removed Platform Column"
 
