@@ -31,11 +31,11 @@ table Games
 		summarizeBy: none
 		sourceColumn: title
 
-	column Platform
-		dataType: string
+	column PlatformKey
+		dataType: int64
 		isHidden: true
 		summarizeBy: none
-		sourceColumn: platform
+		sourceColumn: PlatformKey
 
 	column Date
 		dataType: string
@@ -68,7 +68,15 @@ table Games
 				let
 				    Source = Csv.Document(Web.Contents("https://raw.githubusercontent.com/yaylinda/nintendo-games-ratings/master/data.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.None]),
 				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
-				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"meta_score", Int64.Type}, {"title", type text}, {"platform", type text}, {"date", type text}, {"user_score", type number}, {"link", type text}, {"esrb_rating", type text}, {"developers", type text}, {"genres", type text}})
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"meta_score", Int64.Type}, {"title", type text}, {"platform", type text}, {"date", type text}, {"user_score", type number}, {"link", type text}, {"esrb_rating", type text}, {"developers", type text}, {"genres", type text}}),
+				    #"Selected Platform" = Table.SelectColumns(#"Promoted Headers", {"platform"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Selected Platform"),
+				    #"Filtered Rows" = Table.SelectRows(#"Removed Duplicates", each [platform] <> "TG16)" and [platform] <> "working title)"),
+				    #"Sorted Rows" = Table.Sort(#"Filtered Rows", {{"platform", Order.Ascending}}),
+				    #"Added Platform Index" = Table.AddIndexColumn(#"Sorted Rows", "PlatformKey", 1, 1, Int64.Type),
+				    #"Merged Platform Lookup" = Table.NestedJoin(#"Changed Type", {"platform"}, #"Added Platform Index", {"platform"}, "PlatformLookup", JoinKind.LeftOuter),
+				    #"Expanded Platform Lookup" = Table.ExpandTableColumn(#"Merged Platform Lookup", "PlatformLookup", {"PlatformKey"}, {"PlatformKey"}),
+				    #"Removed Platform Column" = Table.RemoveColumns(#"Expanded Platform Lookup", {"platform"})
 				in
-				    #"Changed Type"
+				    #"Removed Platform Column"
 

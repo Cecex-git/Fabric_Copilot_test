@@ -13,5 +13,5 @@ ref table Games
 ref table Platforms
 
 relationship 'Games-Platforms'
-	fromColumn: Games.Platform
-	toColumn: Platforms.Platform
+	fromColumn: Games.PlatformKey
+	toColumn: Platforms.PlatformKey
