@@ -45,6 +45,42 @@
         "Source": "standard\\DAX Expressions"
     },
     {
+        "ID": "DAX_COUNTROWS_INSTEAD_OF_COUNT",
+        "Name": "Prefer COUNTROWS over COUNT",
+        "Category": "DAX Expressions",
+        "Description": "COUNTROWS is generally more explicit and often more efficient than COUNT when the goal is to count table rows. Prefer COUNTROWS unless you specifically need COUNT semantics on a column.",
+        "Severity": 2,
+        "Scope": "Measure, CalculatedColumn, CalculatedTable",
+        "Expression": "Expression.Contains(\"COUNT(\", StringComparison.OrdinalIgnoreCase)",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\DAX Optimization"
+    },
+    {
+        "ID": "DAX_AVOID_FORMAT_IN_MEASURES",
+        "Name": "Avoid FORMAT in measures",
+        "Category": "DAX Expressions",
+        "Description": "FORMAT converts values to text and can hurt performance and semantic behavior. Prefer keeping measures numeric and using the model Format String property instead.",
+        "Severity": 2,
+        "Scope": "Measure",
+        "Expression": "Expression.Contains(\"FORMAT(\", StringComparison.OrdinalIgnoreCase)",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\DAX Optimization"
+    },
+    {
+        "ID": "DAX_AVOID_EARLIER",
+        "Name": "Avoid EARLIER",
+        "Category": "DAX Expressions",
+        "Description": "EARLIER often makes calculated columns harder to understand and maintain. Prefer variables and clearer row-context patterns where possible.",
+        "Severity": 2,
+        "Scope": "CalculatedColumn, CalculatedTableColumn",
+        "Expression": "Expression.Contains(\"EARLIER(\", StringComparison.OrdinalIgnoreCase)",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\DAX Optimization"
+    },
+    {
         "ID": "APPLY_FORMAT_STRING_MEASURES",
         "Name": "Provide format string for all visible measures",
         "Category": "Formatting",
