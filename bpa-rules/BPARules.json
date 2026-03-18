@@ -51,7 +51,7 @@
         "Description": "COUNTROWS is generally more explicit and often more efficient than COUNT when the goal is to count table rows. Prefer COUNTROWS unless you specifically need COUNT semantics on a column.",
         "Severity": 2,
         "Scope": "Measure, CalculatedColumn, CalculatedTable",
-        "Expression": "Expression.Contains(\"COUNT(\", StringComparison.OrdinalIgnoreCase)",
+        "Expression": "Expression.IndexOf(\"COUNT(\", StringComparison.OrdinalIgnoreCase) >= 0",
         "FixExpression": null,
         "CompatibilityLevel": 1200,
         "Source": "custom\\DAX Optimization"
@@ -63,7 +63,7 @@
         "Description": "FORMAT converts values to text and can hurt performance and semantic behavior. Prefer keeping measures numeric and using the model Format String property instead.",
         "Severity": 2,
         "Scope": "Measure",
-        "Expression": "Expression.Contains(\"FORMAT(\", StringComparison.OrdinalIgnoreCase)",
+        "Expression": "Expression.IndexOf(\"FORMAT(\", StringComparison.OrdinalIgnoreCase) >= 0",
         "FixExpression": null,
         "CompatibilityLevel": 1200,
         "Source": "custom\\DAX Optimization"
@@ -75,7 +75,7 @@
         "Description": "EARLIER often makes calculated columns harder to understand and maintain. Prefer variables and clearer row-context patterns where possible.",
         "Severity": 2,
         "Scope": "CalculatedColumn, CalculatedTableColumn",
-        "Expression": "Expression.Contains(\"EARLIER(\", StringComparison.OrdinalIgnoreCase)",
+        "Expression": "Expression.IndexOf(\"EARLIER(\", StringComparison.OrdinalIgnoreCase) >= 0",
         "FixExpression": null,
         "CompatibilityLevel": 1200,
         "Source": "custom\\DAX Optimization"
