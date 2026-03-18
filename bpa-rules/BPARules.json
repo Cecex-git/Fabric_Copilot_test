@@ -74,7 +74,7 @@
         "Category": "DAX Expressions",
         "Description": "EARLIER often makes calculated columns harder to understand and maintain. Prefer variables and clearer row-context patterns where possible.",
         "Severity": 2,
-        "Scope": "CalculatedColumn, CalculatedTableColumn",
+        "Scope": "CalculatedColumn",
         "Expression": "Expression.IndexOf(\"EARLIER(\", StringComparison.OrdinalIgnoreCase) >= 0",
         "FixExpression": null,
         "CompatibilityLevel": 1200,
