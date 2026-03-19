@@ -304,8 +304,9 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 | `DAX_TODO` | Revisit TODO expressions | 1 |
 | `DAX_COUNTROWS_INSTEAD_OF_COUNT` | Prefer COUNTROWS over COUNT | 2 |
 | `DAX_AVOID_FORMAT_IN_MEASURES` | Avoid FORMAT in measures | 2 |
-| DAX_AVOID_EARLIER | Avoid EARLIER | 2 |
-| DAX_AVOID_NESTED_CALCULATE | Avoid nested CALCULATE | 2 |
+| `DAX_AVOID_EARLIER` | Avoid EARLIER | 2 |
+| `DAX_AVOID_NESTED_CALCULATE` | Avoid nested CALCULATE | 2 |
+| `DAX_AVOID_FILTER_WHOLE_TABLE_IN_CALCULATE` | Avoid FILTER over whole tables in CALCULATE | 2 |
 
 #### Formatting
 
@@ -319,6 +320,7 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 |---|---|---|
 | `META_AVOID_FLOAT` | Do not use floating point data types | 3 |
 | `META_SUMMARIZE_NONE` | Don't summarize numeric columns | 1 |
+| `META_AVOID_CALCULATED_COLUMNS_ON_RELATIONSHIP_KEYS` | Avoid calculated columns on relationship keys | 2 |
 
 #### Model Layout
 

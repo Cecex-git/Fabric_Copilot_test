@@ -93,6 +93,18 @@
         "Source": "custom\\DAX Optimization"
     },
     {
+        "ID": "DAX_AVOID_FILTER_WHOLE_TABLE_IN_CALCULATE",
+        "Name": "Avoid FILTER over whole tables in CALCULATE",
+        "Category": "DAX Expressions",
+        "Description": "Using FILTER() as a CALCULATE filter argument often forces row-by-row table scans and can hurt performance. Prefer direct column filter arguments where possible.",
+        "Severity": 2,
+        "Scope": "Measure, CalculatedColumn, CalculatedTable",
+        "Expression": "Expression.IndexOf(\"CALCULATE(\", StringComparison.OrdinalIgnoreCase) >= 0 and Expression.IndexOf(\"FILTER(\", StringComparison.OrdinalIgnoreCase) >= 0",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\DAX Optimization"
+    },
+    {
         "ID": "APPLY_FORMAT_STRING_MEASURES",
         "Name": "Provide format string for all visible measures",
         "Category": "Formatting",
@@ -125,6 +137,18 @@
         "Expression": "IsHidden = false and Table.IsHidden = false and SummarizeBy <> \"None\" and (DataType = \"Double\" or DataType = \"Decimal\" or DataType = \"Int64\")",
         "FixExpression": "SummarizeBy = AggregateFunction.None",
         "Source": "standard\\Metadata"
+    },
+    {
+        "ID": "META_AVOID_CALCULATED_COLUMNS_ON_RELATIONSHIP_KEYS",
+        "Name": "Avoid calculated columns on relationship keys",
+        "Category": "Metadata",
+        "Description": "Calculated columns used in relationships can hurt performance and complicate model design. Prefer source-generated or Power Query-generated keys instead.",
+        "Severity": 2,
+        "Scope": "CalculatedColumn",
+        "Expression": "Model.Relationships.Any(FromColumn = outerIt or ToColumn = outerIt)",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\Performance"
     },
     {
         "ID": "LAYOUT_ADD_TO_PERSPECTIVES",
