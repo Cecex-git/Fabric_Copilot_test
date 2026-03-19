@@ -405,6 +405,7 @@ Rules are defined in `bpa-rules/ReportBPARules.json`. Severity scale: 1 = Info, 
 | `REPORT_VISUAL_WITHIN_BOUNDS` | Visual must fit within page bounds | 3 (Error) |
 | `REPORT_NO_OVERLAPPING_VISUALS` | Visuals must not overlap each other | 2 (Warning) |
 | `REPORT_MAX_VISUALS_PER_PAGE` | Avoid too many visuals on a single page (max 6) | 1 (Info) |
+| `REPORT_MAX_PAGES` | Avoid too many report pages (max 7) | 2 (Warning) |
 
 #### Data
 
@@ -443,7 +444,7 @@ Edit `bpa-rules/ReportBPARules.json`. Each rule requires:
 - `Severity` — 1 (Info), 2 (Warning), 3 (Error)
 - `Enabled` — `true` or `false`
 
-Rule-specific parameters (e.g. `MaxVisuals`, `MinTextSize`) are read by the evaluator script. To add a **new rule type** with custom logic, add the rule definition to `ReportBPARules.json` and add the corresponding evaluation block in `bpa-rules/validate_report_bpa.py`.
+Rule-specific parameters (e.g. `MaxVisuals`, `MaxPages`, `MinTextSize`) are read by the evaluator script. To add a **new rule type** with custom logic, add the rule definition to `ReportBPARules.json` and add the corresponding evaluation block in `bpa-rules/validate_report_bpa.py`.
 
 ### Alt text requirement
 

@@ -91,8 +91,21 @@ def get_alt_text(single_visual):
 
 def validate(report, rules):
     violations = []
+    sections = report.get("sections", [])
 
-    for section in report.get("sections", []):
+    # REPORT_MAX_PAGES
+    rule = rules.get("REPORT_MAX_PAGES")
+    if rule:
+        max_pages = rule.get("MaxPages", 7)
+        if len(sections) > max_pages:
+            violations.append({
+                "rule": rule,
+                "page": None,
+                "visual": None,
+                "detail": f"Report has {len(sections)} pages (max allowed: {max_pages})."
+            })
+
+    for section in sections:
         page_name = section.get("displayName", "")
         page_w = float(section.get("width", 0))
         page_h = float(section.get("height", 0))

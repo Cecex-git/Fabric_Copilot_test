@@ -41,6 +41,15 @@
         "MaxVisuals": 6
     },
     {
+        "ID": "REPORT_MAX_PAGES",
+        "Name": "Avoid too many report pages",
+        "Category": "Layout",
+        "Description": "A report should not contain more than 7 pages. Too many tabs make navigation harder and reduce usability.",
+        "Severity": 2,
+        "Enabled": true,
+        "MaxPages": 7
+    },
+    {
         "ID": "REPORT_VISUAL_HAS_ALT_TEXT",
         "Name": "Visual must have alt text for accessibility",
         "Category": "Accessibility",
