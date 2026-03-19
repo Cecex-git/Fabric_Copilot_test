@@ -81,6 +81,18 @@
         "Source": "custom\\DAX Optimization"
     },
     {
+        "ID": "DAX_AVOID_NESTED_CALCULATE",
+        "Name": "Avoid nested CALCULATE",
+        "Category": "DAX Expressions",
+        "Description": "Nested CALCULATE calls often indicate unnecessarily complex filter/context logic and can hurt readability and performance. Prefer restructuring the expression with variables or simpler filter logic where possible.",
+        "Severity": 2,
+        "Scope": "Measure, CalculatedColumn, CalculatedTable",
+        "Expression": "Expression.IndexOf(\"CALCULATE(\", StringComparison.OrdinalIgnoreCase) <> Expression.LastIndexOf(\"CALCULATE(\", StringComparison.OrdinalIgnoreCase)",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\DAX Optimization"
+    },
+    {
         "ID": "APPLY_FORMAT_STRING_MEASURES",
         "Name": "Provide format string for all visible measures",
         "Category": "Formatting",

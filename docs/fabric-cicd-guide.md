@@ -304,7 +304,8 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 | `DAX_TODO` | Revisit TODO expressions | 1 |
 | `DAX_COUNTROWS_INSTEAD_OF_COUNT` | Prefer COUNTROWS over COUNT | 2 |
 | `DAX_AVOID_FORMAT_IN_MEASURES` | Avoid FORMAT in measures | 2 |
-| `DAX_AVOID_EARLIER` | Avoid EARLIER | 2 |
+| DAX_AVOID_EARLIER | Avoid EARLIER | 2 |
+| DAX_AVOID_NESTED_CALCULATE | Avoid nested CALCULATE | 2 |
 
 #### Formatting
 
@@ -680,3 +681,4 @@ Service Principals **cannot use Automatic credentials** with GitHub — always u
 | Report BPA: `Visual has no alt text` | Alt text not set on a visual | Set alt text in Power BI Desktop: Format pane → General → Alt text; or add it directly to the `singleVisual.objects.general[0].properties.altText` field in `report.json` |
 | Report BPA: `Visual extends beyond page bounds` | Visual position + size exceeds page dimensions | Adjust `x`/`y`/`width`/`height` in the visual container so `x + width ≤ page width` and `y + height ≤ page height` |
 | Report BPA: `Visuals overlap` | Two visuals share screen area | Reposition visuals so their bounding boxes do not intersect |
+
