@@ -406,7 +406,6 @@ Rules are defined in `bpa-rules/ReportBPARules.json`. Severity scale: 1 = Info, 
 | `REPORT_NO_OVERLAPPING_VISUALS` | Visuals must not overlap each other | 2 (Warning) |
 | `REPORT_MAX_VISUALS_PER_PAGE` | Avoid too many visuals on a single page (max 6) | 1 (Info) |
 | `REPORT_MAX_PAGES` | Avoid too many report pages (max 7) | 2 (Warning) |
-| `REPORT_PIE_DONUT_MAX_CATEGORIES` | Pie and donut charts should have limited categories (max 7) | 1 (Info) |
 
 #### Data
 
@@ -445,9 +444,7 @@ Edit `bpa-rules/ReportBPARules.json`. Each rule requires:
 - `Severity` — 1 (Info), 2 (Warning), 3 (Error)
 - `Enabled` — `true` or `false`
 
-Rule-specific parameters (e.g. `MaxVisuals`, `MaxPages`, `MaxCategories`, `MinTextSize`) are read by the evaluator script. To add a **new rule type** with custom logic, add the rule definition to `ReportBPARules.json` and add the corresponding evaluation block in `bpa-rules/validate_report_bpa.py`.
-
-For `REPORT_PIE_DONUT_MAX_CATEGORIES`, the evaluator estimates category count from the semantic model's CSV-backed table definitions. If the validator cannot resolve the source data for a category field, it skips the check rather than producing a false positive.
+Rule-specific parameters (e.g. `MaxVisuals`, `MaxPages`, `MinTextSize`) are read by the evaluator script. To add a **new rule type** with custom logic, add the rule definition to `ReportBPARules.json` and add the corresponding evaluation block in `bpa-rules/validate_report_bpa.py`.
 
 ### Alt text requirement
 

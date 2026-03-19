@@ -8,11 +8,6 @@ Exits with code 1 if any rule with severity >= 2 is violated.
 import json
 import sys
 import os
-import csv
-import io
-import re
-from pathlib import Path
-from urllib.request import urlopen
 from itertools import combinations
 
 SEVERITY_LABELS = {1: "INFO", 2: "WARNING", 3: "ERROR"}
@@ -94,99 +89,7 @@ def get_alt_text(single_visual):
         return None
 
 
-def extract_column_source_column(table_path, column_name):
-    """Extract the sourceColumn for a given TMDL column name."""
-    lines = Path(table_path).read_text(encoding="utf-8").splitlines()
-    in_target_column = False
-    column_indent = None
-
-    for line in lines:
-        stripped = line.strip()
-        indent = len(line) - len(line.lstrip())
-
-        if stripped.startswith("column "):
-            name = stripped[len("column "):]
-            in_target_column = (name == column_name)
-            column_indent = indent if in_target_column else None
-            continue
-
-        if in_target_column:
-            if stripped and indent <= column_indent:
-                in_target_column = False
-                column_indent = None
-                continue
-            if stripped.startswith("sourceColumn:"):
-                return stripped.split(":", 1)[1].strip()
-
-    return None
-
-
-def resolve_raw_source_column(table_text, final_source_column):
-    """Map a renamed output column back to its raw CSV column name when possible."""
-    rename_pairs = re.findall(r'\{\{"([^"]+)",\s*"([^"]+)"\}\}', table_text)
-    rename_map = {new: old for old, new in rename_pairs}
-    if final_source_column in rename_map:
-        return rename_map[final_source_column]
-    return final_source_column
-
-
-def extract_csv_url(table_text):
-    match = re.search(r'Web\.Contents\("([^"]+)"\)', table_text)
-    return match.group(1) if match else None
-
-
-def extract_excluded_values(table_text, source_column):
-    pattern = rf'\[{re.escape(source_column)}\]\s*<>\s*"([^"]*)"'
-    return re.findall(pattern, table_text)
-
-
-def count_distinct_categories(query_ref, repo_root):
-    """
-    Estimate category count for a report queryRef by reading the model's source CSV.
-    Supports this project's TMDL pattern for CSV-backed tables.
-    """
-    if "." not in query_ref:
-        return None
-
-    table_name, column_name = query_ref.split(".", 1)
-    table_path = Path(repo_root) / "Games.SemanticModel" / "definition" / "tables" / f"{table_name}.tmdl"
-    if not table_path.exists():
-        return None
-
-    table_text = table_path.read_text(encoding="utf-8")
-    source_column = extract_column_source_column(table_path, column_name)
-    if not source_column:
-        return None
-
-    raw_source_column = resolve_raw_source_column(table_text, source_column)
-    csv_url = extract_csv_url(table_text)
-    if not csv_url:
-        return None
-
-    with urlopen(csv_url) as response:
-        raw_data = response.read().decode("utf-8-sig")
-
-    reader = csv.DictReader(io.StringIO(raw_data))
-    if not reader.fieldnames:
-        return None
-
-    field_lookup = {name.lower(): name for name in reader.fieldnames}
-    actual_field = field_lookup.get(raw_source_column.lower())
-    if not actual_field:
-        return None
-
-    excluded_values = set(extract_excluded_values(table_text, raw_source_column))
-    distinct_values = set()
-    for row in reader:
-        value = (row.get(actual_field) or "").strip()
-        if not value or value in excluded_values:
-            continue
-        distinct_values.add(value)
-
-    return len(distinct_values)
-
-
-def validate(report, rules, repo_root):
+def validate(report, rules):
     violations = []
     sections = report.get("sections", [])
 
@@ -296,26 +199,6 @@ def validate(report, rules, repo_root):
                             )
                         })
 
-            # REPORT_PIE_DONUT_MAX_CATEGORIES
-            rule = rules.get("REPORT_PIE_DONUT_MAX_CATEGORIES")
-            if rule and visual_type in {"pieChart", "donutChart"}:
-                categories = single.get("projections", {}).get("Category", [])
-                if categories:
-                    query_ref = categories[0].get("queryRef")
-                    if query_ref:
-                        category_count = count_distinct_categories(query_ref, repo_root)
-                        max_categories = rule.get("MaxCategories", 7)
-                        if category_count is not None and category_count > max_categories:
-                            violations.append({
-                                "rule": rule,
-                                "page": page_name,
-                                "visual": visual_name,
-                                "detail": (
-                                    f"Visual '{visual_type}' ({visual_name}) uses category field '{query_ref}' "
-                                    f"with {category_count} distinct values (max recommended: {max_categories})."
-                                )
-                            })
-
         # REPORT_NO_OVERLAPPING_VISUALS
         rule = rules.get("REPORT_NO_OVERLAPPING_VISUALS")
         if rule:
@@ -336,7 +219,6 @@ def validate(report, rules, repo_root):
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     rules_path = os.path.join(script_dir, "ReportBPARules.json")
-    repo_root = str(Path(script_dir).parent)
 
     if len(sys.argv) < 2:
         print("Usage: validate_report_bpa.py <path-to-report.json>")
@@ -354,7 +236,7 @@ def main():
 
     rules = load_rules(rules_path)
     report = load_report(report_path)
-    violations = validate(report, rules, repo_root)
+    violations = validate(report, rules)
 
     if not violations:
         print("✅ Report BPA passed — no violations found.")
