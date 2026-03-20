@@ -349,6 +349,8 @@ Rules are defined in `bpa-rules/BPARules.json`. Each rule has a Severity (1 = lo
 | `RELATIONSHIP_AVOID_BIDIRECTIONAL` | Avoid bidirectional cross-filtering | 2 |
 | `RELATIONSHIP_AVOID_MANY_TO_MANY` | Avoid many-to-many relationships | 2 |
 | `RELATIONSHIP_TEXT_KEYS` | Relationship keys should not be text | 2 |
+| `RELATIONSHIP_KEY_DATATYPES_MATCH` | Relationship key data types must match | 2 |
+| `RELATIONSHIP_DIMENSION_KEY_SHOULD_BE_MARKED` | Dimension relationship key should be marked as key | 2 |
 
 #### Performance
 
