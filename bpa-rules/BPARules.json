@@ -275,6 +275,30 @@
         "Source": "custom\\Relationships"
     },
     {
+        "ID": "RELATIONSHIP_KEY_DATATYPES_MATCH",
+        "Name": "Relationship key data types must match",
+        "Category": "Relationship Design",
+        "Description": "Both sides of a relationship should use the same data type. Mismatched key data types can break relationship detection and hurt model reliability.",
+        "Severity": 2,
+        "Scope": "Relationship",
+        "Expression": "FromColumn.DataType <> ToColumn.DataType",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\Relationships"
+    },
+    {
+        "ID": "RELATIONSHIP_DIMENSION_KEY_SHOULD_BE_MARKED",
+        "Name": "Dimension relationship key should be marked as key",
+        "Category": "Relationship Design",
+        "Description": "The one-side relationship key on the dimension table should be marked with IsKey = true to document model intent and align with TMDL authoring guidance.",
+        "Severity": 2,
+        "Scope": "Relationship",
+        "Expression": "not ToColumn.IsKey",
+        "FixExpression": null,
+        "CompatibilityLevel": 1200,
+        "Source": "custom\\Relationships"
+    },
+    {
         "ID": "UPPERCASE_FIRST_LETTER_COLUMNS_HIERARCHIES",
         "Name": "Column and hierarchy names must start with uppercase letter",
         "Category": "Naming Conventions",
